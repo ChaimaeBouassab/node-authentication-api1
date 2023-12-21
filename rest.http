@@ -1,2 +1,2 @@
-# get request 
-GET http:localhost:2999 
+# get request index page y
+GET http:localhost:2998 
