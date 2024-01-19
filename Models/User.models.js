@@ -1,8 +1,14 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-const bcrypt = require('bcrypt')
+//const bcrypt = require('bcrypt')
 
 const UserSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    minLength: 6,
+    maxLength: 50,
+  },
     email: {
       type: String,
       required: true,
@@ -12,6 +18,14 @@ const UserSchema = new Schema({
     password: {
       type: String,
       required: true,
+    },
+    
+  },
+  {
+    statics: {
+      async isEmailUsed(email) {
+        return !!(await this.findOne({ email }));
+      },
     },
   })
 
