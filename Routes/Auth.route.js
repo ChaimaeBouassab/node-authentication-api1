@@ -2,6 +2,10 @@ const express = require('express')
 const router = express.Router()
 const morgan = require('morgan')
 const createError=require('http-errors');
+const User = require('../Models/User.models')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+ 
 
 
 router.post("/registre", async (req, res) => {
@@ -21,8 +25,8 @@ router.post("/registre", async (req, res) => {
       if (isEmailUsed)
         throw new Error(JSON.stringify({ message: "Email is already used" }));
       //?hasing the password
-      const salt = await bycrypt.genSalt();
-      user.password = await bycrypt.hash(user.password, salt);
+      const salt = await bcrypt.genSalt();
+      user.password = await bcrypt.hash(user.password, salt);
       //?inserting the newuser to the databse
       user.save();
   
@@ -32,7 +36,7 @@ router.post("/registre", async (req, res) => {
           exp: Date.now() + +process.env.TOKEN_EXIPE_TIME,
           iat: Date.now(),
         },
-        process.env.TOKEN_SECRET
+        process.env.ACCESS_TOKEN_SECRET
       );
   
       res.header("auth-token", token).json({ status: "ok" });
@@ -50,12 +54,12 @@ router.post("/registre", async (req, res) => {
       if (user === null)
         throw new Error(JSON.stringify({ message: "user not found" }));
   
-      if (user.email !== req.body.email)
+      if (user.email !== req.body.email.toLowerCase())
         throw new Error(
           JSON.stringify({ message: "email or password are incorrect" })
         );
   
-      const isPasswordCorrect = await bycrypt.compare(
+      const isPasswordCorrect = await bcrypt.compare(
         req.body.password,
         user.password
       );
@@ -70,7 +74,7 @@ router.post("/registre", async (req, res) => {
           exp: Date.now() + +process.env.TOKEN_EXIPE_TIME,
           iat: Date.now(),
         },
-        process.env.TOKEN_SECRET
+        process.env.ACCESS_TOKEN_SECRET
       );
       res.header("auth-token", token).json({ status: "ok" });
     
@@ -91,13 +95,13 @@ router.post("/registre", async (req, res) => {
      
       const user = await User.findOne({ email: email });
       if (!user) throw new Error(JSON.stringify({ message: "user not found" }));
-      const isPasswordCorrect = await bycrypt.compare(oldPassword, user.password);
+      const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
   
       if (!isPasswordCorrect)
         throw new Error(JSON.stringify({ message: "old password is incorrect" }));
   
-      const salt = await bycrypt.genSalt();
-      const hashedPassword = await bycrypt.hash(newPassword, salt);
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
   
       user.password = hashedPassword;
       await user.save();
@@ -114,7 +118,7 @@ router.post("/registre", async (req, res) => {
     })
     
     router.post('/register', async (req, res, next) => {
-    res. send('register route')
+    res.send('register route')
     res.status(200).json({ message: 'Registration successful', user: { email } });
 
     })
