@@ -1,14 +1,15 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 //const bcrypt = require('bcrypt')
 
-const UserSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    minLength: 6,
-    maxLength: 50,
-  },
+const UserSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      minLength: 6,
+      maxLength: 50,
+    },
     email: {
       type: String,
       required: true,
@@ -19,8 +20,15 @@ const UserSchema = new Schema({
       type: String,
       required: true,
     },
-  
-    
+    level: {
+      type: String,
+      enum: ["advanced", "normal", "intermediate"],
+      required: true,
+    },
+    github: { type: String, required: true },
+    linkedin: { type: String, required: true },
+    team: { type: String, required: true },
+    year: { type: Date, required: true },
   },
   {
     statics: {
@@ -28,7 +36,8 @@ const UserSchema = new Schema({
         return !!(await this.findOne({ email }));
       },
     },
-  })
+  }
+);
 
-  const User = mongoose.model('user', UserSchema)
-module.exports = User
+const User = mongoose.model("user", UserSchema);
+module.exports = User;

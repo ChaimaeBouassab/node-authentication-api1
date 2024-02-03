@@ -10,10 +10,17 @@ const jwt = require('jsonwebtoken')
 
 router.post("/registre", async (req, res) => {
     try {
+      const { name, email, password, level, github, linkedin, team, year } = req.body;
+
       const user = new User({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
+        name: name,
+        email: email,
+        password: password,
+        level: level,
+        github: github,
+        linkedin: linkedin,
+        team: team,
+        year: year
       });
       //?check if the user is valid
       const error = await user.validate();
