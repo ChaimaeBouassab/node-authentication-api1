@@ -24,23 +24,18 @@ module.exports = {
         year: year,
       });
 
-      // Validation de l'utilisateur
       const error = await user.validate();
       if (error) throw error;
 
-      // Vérification de l'email déjà utilisé
       const isEmailUsed = await User.isEmailUsed(user.email);
       if (isEmailUsed)
         throw new Error(JSON.stringify({ message: "Email is already used" }));
 
-      // Hachage du mot de passe
       const salt = await bcrypt.genSalt();
       user.password = await bcrypt.hash(user.password, salt);
 
-      // Enregistrement de l'utilisateur
       await user.save();
 
-      // Génération du token d'authentification
       const token = jwt.sign(
         {
           id: user._id,
@@ -92,7 +87,6 @@ module.exports = {
         process.env.ACCESS_TOKEN_SECRET
       );
 
-      // Envoi du token dans l'en-tête de la réponse
       res.header("auth-token", token).json({ status: "ok" });
     } catch (error) {
       res.status(400).send(error.message);
@@ -141,10 +135,26 @@ module.exports = {
     res.send("refresh token route");
   },
 
-  logout: async (req, res) => {
-    // Logique de déconnexion
-    res.send("logout route");
-  }
+  logout: async (req, res, next) => {
+    try {
+    // Extraction du refreshToken de la requête
+      const { refreshToken } = req.body
+      if (!refreshToken) throw createError.BadRequest()
+      const userId = await verifyRefreshToken(refreshToken)
+    //client.DEL(userId, ...)  méthode de node-redis permettant de 
+    //supprimer une clé de Redis (ici, userId)
+      client.DEL(userId, (err, val) => {
+        if (err) {
+          console.log(err.message)
+          throw createError.InternalServerError()
+        }
+        console.log(val)
+        res.sendStatus(204)
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
 
-  
+
 };
