@@ -5,7 +5,7 @@ const createError = require("http-errors");
 const User = require("../Models/User.models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { signAccessToken, signRefreshToken } = require("../helpers/jwt_helper");
+const { signAccessToken, signRefreshToken } = require("../helpers/jwt_helpers");
 
 module.exports = {
   register: async (req, res) => {
@@ -129,10 +129,18 @@ module.exports = {
     }
   },
 
-  refreshToken: async (req, res) => {
-    const { email, password } = req.body;
-    // Logique de rafraîchissement du token
-    res.send("refresh token route");
+  refreshToken: async (req, res, next) => {
+    try {
+      const { refreshToken } = req.body
+      if (!refreshToken) throw createError.BadRequest()
+      const userId = await verifyRefreshToken(refreshToken)
+
+      const accessToken = await signAccessToken(userId)
+      const refToken = await signRefreshToken(userId)
+      res.send({ accessToken: accessToken, refreshToken: refToken })
+    } catch (error) {
+      next(error)
+    }
   },
 
   logout: async (req, res, next) => {
