@@ -12,7 +12,7 @@ const { signAccessToken, signRefreshToken } = require("../helpers/jwt_helpers");
 module.exports = {
   register: async (req, res) => {
     try {
-      const { name, email, password, level, github, linkedin, team, year } =
+      const { name, email, password, level, github, linkedin, team } =
         req.body;
 
       const user = new User({
@@ -23,7 +23,7 @@ module.exports = {
         github: github,
         linkedin: linkedin,
         team: team,
-        year: year,
+        year: new Date().getFullYear,
       });
 
       const error = await user.validate();
