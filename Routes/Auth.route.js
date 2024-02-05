@@ -9,14 +9,14 @@ router.post("/changepassword", AuthController.changePassword);
 router.delete("/logout", AuthController.logout);
 
 // Create a new user
-router.post("/api/v1/users", authController.createUser);
+router.post("/api/v1/users", AuthController.createUser);
 
 // Get a user by ID
-router.get("/api/v1/users/:user_id", authController.getUserById);
+router.get("/api/v1/users/:user_id", AuthController.getUserById);
 
 // Edit User Data
-router.patch("/api/v1/users/:user_id", authController.editUserData);
+router.patch("/api/v1/users/:user_id", AuthController.editUserData);
 
-router.delete("/api/v1/users/:user_id", authController.deleteUser);
+router.delete("/api/v1/users/:user_id", AuthController.deleteUser);
 
 module.exports = router;
