@@ -7,6 +7,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { signAccessToken, signRefreshToken } = require("../helpers/jwt_helpers");
 
+
+
 module.exports = {
   register: async (req, res) => {
     try {
@@ -93,29 +95,29 @@ module.exports = {
     }
   },
 
-
   changePassword: async (req, res) => {
     try {
       const { email, oldPassword, newPassword } = req.body;
 
-      if (!email)
-        throw new Error("email is missing");
+      if (!email) throw new Error("email is missing");
 
-      if (!oldPassword)
-        throw new Error("old password is missing");
+      if (!oldPassword) throw new Error("old password is missing");
 
-      if (!newPassword)
-        throw new Error("new password is missing");
+      if (!newPassword) throw new Error("new password is missing");
 
       const user = await User.findOne({ email: email });
 
-      if (!user)
-        throw new Error(JSON.stringify({ message: "user not found" }));
+      if (!user) throw new Error(JSON.stringify({ message: "user not found" }));
 
-      const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+      const isPasswordCorrect = await bcrypt.compare(
+        oldPassword,
+        user.password
+      );
 
       if (!isPasswordCorrect)
-        throw new Error(JSON.stringify({ message: "old password is incorrect" }));
+        throw new Error(
+          JSON.stringify({ message: "old password is incorrect" })
+        );
 
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -131,36 +133,103 @@ module.exports = {
 
   refreshToken: async (req, res, next) => {
     try {
-      const { refreshToken } = req.body
-      if (!refreshToken) throw createError.BadRequest()
-      const userId = await verifyRefreshToken(refreshToken)
+      const { refreshToken } = req.body;
+      if (!refreshToken) throw createError.BadRequest();
+      const userId = await verifyRefreshToken(refreshToken);
 
-      const accessToken = await signAccessToken(userId)
-      const refToken = await signRefreshToken(userId)
-      res.send({ accessToken: accessToken, refreshToken: refToken })
+      const accessToken = await signAccessToken(userId);
+      const refToken = await signRefreshToken(userId);
+      res.send({ accessToken: accessToken, refreshToken: refToken });
     } catch (error) {
-      next(error)
+      next(error);
     }
   },
 
   logout: async (req, res, next) => {
     try {
-    // Extraction du refreshToken de la requête
-      const { refreshToken } = req.body
-      if (!refreshToken) throw createError.BadRequest()
-      const userId = await verifyRefreshToken(refreshToken)
-    //client.DEL(userId, ...)  méthode de node-redis permettant de 
-    //supprimer une clé de Redis (ici, userId)
+      // Extraction du refreshToken de la requête
+      const { refreshToken } = req.body;
+      if (!refreshToken) throw createError.BadRequest();
+      const userId = await verifyRefreshToken(refreshToken);
+      //client.DEL(userId, ...)  méthode de node-redis permettant de
+      //supprimer une clé de Redis (ici, userId)
       client.DEL(userId, (err, val) => {
         if (err) {
-          console.log(err.message)
-          throw createError.InternalServerError()
+          console.log(err.message);
+          throw createError.InternalServerError();
         }
-        console.log(val)
-        res.sendStatus(204)
-      })
+        console.log(val);
+        res.sendStatus(204);
+      });
     } catch (error) {
-      next(error)
+      next(error);
+    }
+  },
+  createUser :async (req, res) => {
+    try {
+      const userData = req.body;
+  
+      const newUser = new User(userData);
+      await newUser.save();
+  
+      res
+        .status(201)
+        .json({ message: "User created successfully", user: newUser });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  },
+  editUserData : async (req, res) => {
+    try {
+      const userId = req.params.user_id;
+      const updatedUserData = req.body;
+  
+      const updatedUser = await User.findByIdAndUpdate(userId, updatedUserData, {
+        new: true,
+      });
+  
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.status(200).json({ message: "User data updated successfully", user: updatedUser });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  getUserById : async (req, res) => {
+    try {
+      const userId = req.params.user_id;
+  
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.status(200).json({ user });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to retrieve user" });
+    }
+  },
+
+  deleteUser : async (req, res) => {
+    try {
+      const userId = req.params.user_id;
+  
+      const deletedUser = await User.findByIdAndDelete(userId);
+  
+      if (!deletedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
     }
   },
 
