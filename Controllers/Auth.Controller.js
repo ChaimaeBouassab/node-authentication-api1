@@ -233,27 +233,48 @@ module.exports = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
-  // getUsersWithPagination: async (req, res) => {
-  //   try {
-  //     const { year } = req.params;
-  //     const { page, pageSize } = req.query;
+  getUsersWithPagination: async (req, res) => {
+    try {
+      const { year } = req.params;
+      const { page, pageSize } = req.query;
 
-  //     const pageNum = parseInt(page) || 1;
-  //     const size = parseInt(pageSize) || 10; // Default page size
+        // Validate page and pageSize parameters, set default values if not provided
+      const pageNum = parseInt(page) || 1;
+      const size = parseInt(pageSize) || 10; // Default page size
 
-  //     const skip = (pageNum - 1) * size;
+      const skip = (pageNum - 1) * size;
 
-  //     // Fetch users with pagination based on the provided year
-  //     const users = await User.find({ year: year })
-  //                               .skip(skip)
-  //                               .limit(size);
+      // Fetch users with pagination based on the provided year
+      const users = await User.find({ year: year })
+                                .skip(skip)
+                                .limit(size);
 
-  //     res.status(200).json({ users });
-  //   } catch (error) {
-  //     console.error(error);
-  //     res.status(500).json({ message: 'Internal server error' });
-  //   }
-  // },
+      res.status(200).json({ users });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  },
+  searchUsers : async (req, res) => {
+    try {
+        const { query } = req.query; // Get the search query from request parameters
+
+        // Perform the search based on the query criteria (e.g., name, email, team)
+        const users = await User.find({
+            $or: [
+                { name: { $regex: query, $options: 'i' } }, // Search by name (case-insensitive)
+                { email: { $regex: query, $options: 'i' } }, // Search by email (case-insensitive)
+                { team: { $regex: query, $options: 'i' } } 
+                // Add more criteria as needed (e.g., search by other fields)
+            ]
+        });
+
+        res.status(200).json({ users }); // Return the found users
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+},
 
 
 };

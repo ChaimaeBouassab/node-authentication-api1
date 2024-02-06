@@ -20,4 +20,11 @@ router.patch("/api/v1/users/:user_id", AuthController.editUserData);
 
 router.delete("/api/v1/users/:user_id", AuthController.deleteUser);
 
+router.get("/api/v1/users/search", UserController.searchUsers);
+
+
+// Get Users with Pagination
+router.get('/api/v1/users/:year', UserController.getUsersWithPagination);
+
+
 module.exports = router;
