@@ -265,7 +265,6 @@ module.exports = {
                 { name: { $regex: query, $options: 'i' } }, // Search by name (case-insensitive)
                 { email: { $regex: query, $options: 'i' } }, // Search by email (case-insensitive)
                 { team: { $regex: query, $options: 'i' } } 
-                // Add more criteria as needed (e.g., search by other fields)
             ]
         });
 
@@ -274,6 +273,19 @@ module.exports = {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
+},
+getUsersByYear : async (req, res) => {
+  try {
+      const { year } = req.params;
+
+      // Retrieve users based on the provided year
+      const users = await User.find({ year });
+
+      res.status(200).json({ users });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
 },
 
 

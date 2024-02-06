@@ -22,9 +22,9 @@ router.delete("/api/v1/users/:user_id", AuthController.deleteUser);
 
 router.get("/api/v1/users/search", UserController.searchUsers);
 
+router.get("/api/v1/users/:year", userController.getUsersByYear);
 
 // Get Users with Pagination
-router.get('/api/v1/users/:year', UserController.getUsersWithPagination);
-
+router.get("/api/v1/users/:year", UserController.getUsersWithPagination);
 
 module.exports = router;
