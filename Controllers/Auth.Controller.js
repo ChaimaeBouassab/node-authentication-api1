@@ -23,7 +23,7 @@ module.exports = {
         github: github,
         linkedin: linkedin,
         team: team,
-        year: new Date().getFullYear,
+        year: new Date().getFullYear(),
       });
 
       const error = await user.validate();
@@ -130,7 +130,8 @@ module.exports = {
       res.status(400).send(error.message);
     }
   },
-
+//Cette fonction vérifie si le token de rafraîchissement
+// est valide et retourne l'ID de l'utilisateur associé.
   refreshToken: async (req, res, next) => {
     try {
       const { refreshToken } = req.body;
@@ -232,6 +233,27 @@ module.exports = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
+  // getUsersWithPagination: async (req, res) => {
+  //   try {
+  //     const { year } = req.params;
+  //     const { page, pageSize } = req.query;
+
+  //     const pageNum = parseInt(page) || 1;
+  //     const size = parseInt(pageSize) || 10; // Default page size
+
+  //     const skip = (pageNum - 1) * size;
+
+  //     // Fetch users with pagination based on the provided year
+  //     const users = await User.find({ year: year })
+  //                               .skip(skip)
+  //                               .limit(size);
+
+  //     res.status(200).json({ users });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ message: 'Internal server error' });
+  //   }
+  // },
 
 
 };

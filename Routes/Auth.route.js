@@ -12,6 +12,7 @@ router.delete("/logout", AuthController.logout);
 router.post("/api/v1/users", AuthController.createUser);
 
 // Get a user by ID
+
 router.get("/api/v1/users/:user_id", AuthController.getUserById);
 
 // Edit User Data

@@ -28,7 +28,10 @@ const UserSchema = new Schema(
     github: { type: String, required: true },
     linkedin: { type: String, required: true },
     team: { type: String, required: true },
-    year: { type: Date, required: true },
+    year: {
+      type: Number,
+      default: new Date().getFullYear()
+    },
   },
   {
     statics: {
