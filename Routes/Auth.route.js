@@ -12,7 +12,6 @@ router.delete("/logout", AuthController.logout);
 router.post("/api/v1/users", AuthController.createUser);
 
 // Get a user by ID
-
 router.get("/api/v1/users/:user_id", AuthController.getUserById);
 
 // Edit User Data
@@ -20,11 +19,12 @@ router.patch("/api/v1/users/:user_id", AuthController.editUserData);
 
 router.delete("/api/v1/users/:user_id", AuthController.deleteUser);
 
-router.get("/api/v1/users/search", UserController.searchUsers);
 
-router.get("/api/v1/users/:year", userController.getUsersByYear);
+router.get("/api/v1/users/search", AuthController.searchUsers);
+
+router.get("/api/v1/users/:year", AuthController.getUsersByYear);
 
 // Get Users with Pagination
-router.get("/api/v1/users/:year", UserController.getUsersWithPagination);
+router.get("/api/v1/users/:year", AuthController.getUsersWithPagination);
 
 module.exports = router;
