@@ -1,21 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const morgan = require("morgan");
+const mongoose = require('mongoose')
 const createError = require("http-errors");
-const User = require("../Models/User.models");
+const UserSchema = require("../Models/User.models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { signAccessToken, signRefreshToken } = require("../helpers/jwt_helpers");
 
-
+const getMemberModel = () => {
+  const collectionName = `Member${new Date().getFullYear()}`;
+  return mongoose.model(collectionName, UserSchema);
+};
 
 module.exports = {
   register: async (req, res) => {
+    const MemberModel = getMemberModel();
     try {
       const { name, email, password, level, github, linkedin, team } =
         req.body;
 
-      const user = new User({
+      const user = new  MemberModel({
         name: name,
         email: email,
         password: password,
@@ -29,15 +34,16 @@ module.exports = {
       const error = await user.validate();
       if (error) throw error;
 
-      const isEmailUsed = await User.isEmailUsed(user.email);
+      const isEmailUsed = await MemberModel.isEmailUsed(user.email);
       if (isEmailUsed)
         throw new Error(JSON.stringify({ message: "Email is already used" }));
 
       const salt = await bcrypt.genSalt();
       user.password = await bcrypt.hash(user.password, salt);
 
-      await user.save();
-
+      const data = new MemberModel(user);
+      const savedData = await data.save();
+  
       const token = jwt.sign(
         {
           id: user._id,
@@ -47,6 +53,7 @@ module.exports = {
         process.env.ACCESS_TOKEN_SECRET
       );
 
+      res.status(200).json({ member: savedData, token });
       // Envoi du token dans l'en-tête de la réponse
       res.header("auth-token", token).json({ status: "ok" });
     } catch (error) {
