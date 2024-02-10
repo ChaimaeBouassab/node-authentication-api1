@@ -133,6 +133,7 @@ module.exports = {
 
       user.password = hashedPassword;
 
+      const data = new MemberModel(user);
       await data.save();
 
       res.status(200).send({ status: "ok" });
@@ -234,13 +235,22 @@ module.exports = {
     }
   },
 
-  deleteUser : async (req, res) => {
+  deleteUser: async (req, res) => {
     try {
       const userId = req.params.user_id;
-      const userYear = req.params.user_year;  
-      
+      const userYear = req.params.user_year;
+  
+      // Check if the collection exists
+      const collectionInfo = await db.db.listCollections({ name: `Member${year}` }).toArray();
+      const collectionExists = collectionInfo.some(info => info.name === `Member${year}`);
+      if (!collectionExists) {
+        throw new Error('Collection does not exist');
+      }
+  
+      // Get the MemberModel based on the year
       const MemberModel = getMemberModel(userYear);
   
+      // Delete the user by ID
       const deletedUser = await MemberModel.findByIdAndDelete(userId);
   
       if (!deletedUser) {
@@ -252,7 +262,8 @@ module.exports = {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  },
+  }
+  ,
   getUsersWithPagination: async (req, res) => {
     try {
       const { year } = req.params;
@@ -303,7 +314,7 @@ getUsersByYear : async (req, res) => {
       const MemberModel = getMemberModel(year);
 
       // Retrieve users based on the provided year
-      const users = await MemberModel;
+      const users = await MemberModel.find();
 
       res.status(200).json({ users });
   } catch (error) {
