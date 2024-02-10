@@ -2,9 +2,9 @@ const express = require("express");
 const morgan = require("morgan");
 // const createError = require("http-errors");
 require("dotenv").config();
-require("./helpers/init_mongodb");
+require("./helpers/InitMongodb.js");
 // const { verifyAccessToken } = require("./helpers/jwt_helpers");
-require("./helpers/init_redis");
+require("./helpers/InitRedis.js");
 
 //  import es6
 
