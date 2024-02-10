@@ -32,4 +32,7 @@ mongoose.connection.on('connected',() => {
   })
   
   module.exports = {mongoose}
-  
+
+
+//single connection using the Singleton pattern
+
