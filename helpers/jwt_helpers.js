@@ -1,6 +1,6 @@
 const JWT = require("jsonwebtoken");
 const createError = require("http-errors");
-const client = require("./init_redis"); // Redis client for storing refresh tokens
+const client = require("./InitRedis.js"); // Redis client for storing refresh tokens
 
 module.exports = {
   signAccessToken: (userId) => {

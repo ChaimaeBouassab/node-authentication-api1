@@ -1,13 +1,10 @@
 const express = require("express");
-const router = express.Router();
-const morgan = require("morgan");
-const mongoose = require('mongoose')
 const createError = require("http-errors");
-const getMemberModel = require("../Models/User.models");
+const getMemberModel = require("../Models/UserModels");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { signAccessToken, signRefreshToken } = require("../helpers/jwt_helpers");
-
+// export
 
 module.exports = {
   register: async (req, res) => {
@@ -15,6 +12,8 @@ module.exports = {
     try {
       const { name, email, password, level, github, linkedin, team } =
         req.body;
+
+      // validation password email https://google.com
 
       const user = new  MemberModel({
         name: name,
@@ -39,7 +38,8 @@ module.exports = {
 
       const data = new MemberModel(user);
       const savedData = await data.save();
-  
+
+      // send email
       const token = jwt.sign(
         {
           id: user._id,
@@ -73,9 +73,7 @@ module.exports = {
       if (!user) throw new Error(JSON.stringify({ message: "user not found" }));
 
       if (user.email.toLowerCase() !== email.toLowerCase())
-        throw new Error(
-          JSON.stringify({ message: "email or password are incorrect" })
-        );
+      return res.status(400).send({ message: "email or password are incorrect" });
 
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
@@ -159,6 +157,8 @@ module.exports = {
 
   logout: async (req, res, next) => {
     try {
+      // delete the token from redis
+
       // Extraction du refreshToken de la requête
       const { refreshToken } = req.body;
       if (!refreshToken) throw createError.BadRequest();
@@ -181,7 +181,7 @@ module.exports = {
     try {
       const userData = req.body;
 
-      const MemberModel = getMemberModel(userData.year);
+      const MemberModel = getMemberModel(new Date().getFullYear());
 
       const newUser = new MemberModel(userData);
       await newUser.save();
@@ -196,7 +196,11 @@ module.exports = {
   },
   editUserData : async (req, res) => {
     try {
-      const userId = req.params.user_id;
+      // todo extract the user ID and updated user data from the request jwt token
+      const jwt = req.getHeaders('Authorization').split(' ')[1];
+        const decoded = jwt.verify(jwt, process.env.ACCESS_TOKEN_SECRET);
+        // make sure to check if the user is authorized to edit the user data
+        const userId = decoded.id;
       const updatedUserData = req.body;
 
       const MemberModel = getMemberModel(updatedUser.year);
@@ -266,8 +270,7 @@ module.exports = {
   ,
   getUsersWithPagination: async (req, res) => {
     try {
-      const { year } = req.params;
-      const { page, pageSize } = req.query;
+      const { page, pageSize ,year} = req.query;
 
         // Validate page and pageSize parameters, set default values if not provided
       const pageNum = parseInt(page) || 1;
@@ -309,6 +312,7 @@ module.exports = {
 },
 getUsersByYear : async (req, res) => {
   try {
+      //todo make sure to check if the user is authorized to view the users (admin) and extract the year from the request parameters
       const { year } = req.params;
 
       const MemberModel = getMemberModel(year);
