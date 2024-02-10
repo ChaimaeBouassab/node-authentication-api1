@@ -42,5 +42,8 @@ const UserSchema = new Schema(
   }
 );
 
-const User = mongoose.model("user", UserSchema);
-module.exports = UserSchema;
+const getMemberModel = (year) => {
+  const collectionName = `Member${year}`;
+  return mongoose.model(collectionName, UserSchema);
+};
+module.exports = getMemberModel;

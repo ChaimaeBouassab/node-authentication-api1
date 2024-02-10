@@ -12,12 +12,12 @@ router.delete("/logout", AuthController.logout);
 router.post("/api/v1/users", AuthController.createUser);
 
 // Get a user by ID
-router.get("/api/v1/users/:user_id", AuthController.getUserById);
+router.get("/api/v1/users/:user_id/:user_year", AuthController.getUserById);
 
 // Edit User Data
-router.patch("/api/v1/users/:user_id", AuthController.editUserData);
+router.patch("/api/v1/users/:user_id/:user_year", AuthController.editUserData);
 
-router.delete("/api/v1/users/:user_id", AuthController.deleteUser);
+router.delete("/api/v1/users/:user_id/:user_year", AuthController.deleteUser);
 
 
 router.get("/api/v1/users/search", AuthController.searchUsers);

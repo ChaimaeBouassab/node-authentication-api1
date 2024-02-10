@@ -3,19 +3,15 @@ const router = express.Router();
 const morgan = require("morgan");
 const mongoose = require('mongoose')
 const createError = require("http-errors");
-const UserSchema = require("../Models/User.models");
+const getMemberModel = require("../Models/User.models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { signAccessToken, signRefreshToken } = require("../helpers/jwt_helpers");
 
-const getMemberModel = () => {
-  const collectionName = `Member${new Date().getFullYear()}`;
-  return mongoose.model(collectionName, UserSchema);
-};
 
 module.exports = {
   register: async (req, res) => {
-    const MemberModel = getMemberModel();
+    const MemberModel = getMemberModel(new Date().getFullYear());
     try {
       const { name, email, password, level, github, linkedin, team } =
         req.body;
@@ -63,14 +59,16 @@ module.exports = {
 
   login: async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, year } = req.body;
 
-      if (!email || !password)
+      if (!email || !password || !year)
         throw new Error(
-          JSON.stringify({ message: "email or password is missing" })
+          JSON.stringify({ message: "email or password or year is missing" })
         );
 
-      const user = await User.findOne({ email: email });
+      const MemberModel = getMemberModel(year);
+   
+      const user = await MemberModel.findOne({ email: email });
 
       if (!user) throw new Error(JSON.stringify({ message: "user not found" }));
 
@@ -104,7 +102,7 @@ module.exports = {
 
   changePassword: async (req, res) => {
     try {
-      const { email, oldPassword, newPassword } = req.body;
+      const { email, oldPassword, newPassword, year } = req.body;
 
       if (!email) throw new Error("email is missing");
 
@@ -112,7 +110,11 @@ module.exports = {
 
       if (!newPassword) throw new Error("new password is missing");
 
-      const user = await User.findOne({ email: email });
+      if (!year) throw new Error("year is missing");
+
+      const MemberModel = getMemberModel(year);
+
+      const user = await MemberModel.findOne({ email: email });
 
       if (!user) throw new Error(JSON.stringify({ message: "user not found" }));
 
@@ -130,7 +132,8 @@ module.exports = {
       const hashedPassword = await bcrypt.hash(newPassword, salt);
 
       user.password = hashedPassword;
-      await user.save();
+
+      await data.save();
 
       res.status(200).send({ status: "ok" });
     } catch (error) {
@@ -176,8 +179,10 @@ module.exports = {
   createUser :async (req, res) => {
     try {
       const userData = req.body;
-  
-      const newUser = new User(userData);
+
+      const MemberModel = getMemberModel(userData.year);
+
+      const newUser = new MemberModel(userData);
       await newUser.save();
   
       res
@@ -192,8 +197,10 @@ module.exports = {
     try {
       const userId = req.params.user_id;
       const updatedUserData = req.body;
-  
-      const updatedUser = await User.findByIdAndUpdate(userId, updatedUserData, {
+
+      const MemberModel = getMemberModel(updatedUser.year);
+
+      const updatedUser = await MemberModel.findByIdAndUpdate(userId, updatedUserData, {
         new: true,
       });
   
@@ -210,8 +217,11 @@ module.exports = {
   getUserById : async (req, res) => {
     try {
       const userId = req.params.user_id;
-  
-      const user = await User.findById(userId);
+      const userYear = req.params.user_year;  
+
+      const MemberModel = getMemberModel(userYear);
+
+      const user = await MemberModel.findById(userId);
   
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -227,8 +237,11 @@ module.exports = {
   deleteUser : async (req, res) => {
     try {
       const userId = req.params.user_id;
+      const userYear = req.params.user_year;  
+      
+      const MemberModel = getMemberModel(userYear);
   
-      const deletedUser = await User.findByIdAndDelete(userId);
+      const deletedUser = await MemberModel.findByIdAndDelete(userId);
   
       if (!deletedUser) {
         return res.status(404).json({ message: "User not found" });
@@ -251,10 +264,10 @@ module.exports = {
 
       const skip = (pageNum - 1) * size;
 
+      const MemberModel = getMemberModel(year);
+
       // Fetch users with pagination based on the provided year
-      const users = await User.find({ year: year })
-                                .skip(skip)
-                                .limit(size);
+      const users = await MemberModel.limit(size);
 
       res.status(200).json({ users });
     } catch (error) {
@@ -264,10 +277,12 @@ module.exports = {
   },
   searchUsers : async (req, res) => {
     try {
-        const { query } = req.query; // Get the search query from request parameters
+        const { query, year } = req.query; // Get the search query and year from request parameters  = req.query; // Get the search query from request parameters
+
+        const MemberModel = getMemberModel(year);
 
         // Perform the search based on the query criteria (e.g., name, email, team)
-        const users = await User.find({
+        const users = await MemberModel.find({
             $or: [
                 { name: { $regex: query, $options: 'i' } }, // Search by name (case-insensitive)
                 { email: { $regex: query, $options: 'i' } }, // Search by email (case-insensitive)
@@ -285,8 +300,10 @@ getUsersByYear : async (req, res) => {
   try {
       const { year } = req.params;
 
+      const MemberModel = getMemberModel(year);
+
       // Retrieve users based on the provided year
-      const users = await User.find({ year });
+      const users = await MemberModel;
 
       res.status(200).json({ users });
   } catch (error) {
