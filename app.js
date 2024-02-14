@@ -1,17 +1,18 @@
-import express, { json, urlencoded } from "express";
+import express from "express";
 import morgan from "morgan";
-import createError from "http-errors";
+//import createError from "http-errors";
 dotenv.config();
-import { verifyAccessToken } from "./Helpers/JWTHelpers";
+//import { verifyAccessToken } from "./Helpers/JWTHelpers";
 import AuthRoute from "./Routes/AuthRoute";
 import "./Helpers/InitRedis";
 import "./Helpers/InitMongodb";
+import router from "./Routes/AuthRoute.js";
 
 const app = express();
 
 app.use(morgan("dev"));
-app.use(json());
-app.use(urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", async (req, res, next) => {
   res.send("Hello from express.");

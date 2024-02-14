@@ -1,7 +1,3 @@
-import { Router } from "express";
-const router = Router();
-import morgan from "morgan";
-import mongoose from 'mongoose';
 import { BadRequest, InternalServerError } from "http-errors";
 import { MemberModel, getMemberModel } from "../Models/UserModels";
 import { genSalt, hash, compare } from "bcrypt";
@@ -9,7 +5,7 @@ import { sign } from "jsonwebtoken";
 import { signAccessToken, signRefreshToken } from "../Helpers/JWTHelpers";
 
 
-export async function register(req, res) {
+const register = async (req, res) => {
   try {
     const { name, email, password, level, github, linkedin, team } = req.body;
 
@@ -65,7 +61,8 @@ export async function register(req, res) {
     res.status(400).send(error.message);
   }
 }
-export async function login(req, res) {
+
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -100,7 +97,9 @@ export async function login(req, res) {
     res.status(400).send(error.message);
   }
 }
-export async function changePassword(req, res) {
+
+
+const changePassword = async (req, re) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
 
@@ -134,7 +133,8 @@ export async function changePassword(req, res) {
     res.status(400).send(error.message);
   }
 }
-export async function refreshToken(req, res, next) {
+
+const refreshToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) throw BadRequest();
@@ -147,7 +147,8 @@ export async function refreshToken(req, res, next) {
     next(error);
   }
 }
-export async function logout(req, res, next) {
+
+ const logout = async (req, res, next)=> {
   try {
     // Extraction du refreshToken de la requête
     const { refreshToken } = req.body;
@@ -167,7 +168,7 @@ export async function logout(req, res, next) {
     next(error);
   }
 }
-export async function createUser(req, res) {
+const  createUser =  async (req, res)=> {
   try {
     const userData = req.body;
 
@@ -180,7 +181,8 @@ export async function createUser(req, res) {
     res.status(500).json({ error: "Failed to create user" });
   }
 }
-export async function editUserData(req, res) {
+
+const  editUserData = async (req, res) =>{
   try {
     const userId = req.params.user_id;
     const updatedUserData = req.body;
@@ -199,7 +201,8 @@ export async function editUserData(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
-export async function getUserById(req, res) {
+
+const getUserById = async (req, res)=> {
   try {
     const userId = req.params.user_id;
     const userYear = req.params.user_year;
@@ -216,7 +219,7 @@ export async function getUserById(req, res) {
     res.status(500).json({ error: "Failed to retrieve user" });
   }
 }
-export async function deleteUser(req, res) {
+const deleteUser  = async (req, res)=>  {
   try {
     const userId = req.params.user_id;
 
@@ -233,7 +236,7 @@ export async function deleteUser(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
-export async function getUsersWithPagination(req, res) {
+const getUsersWithPagination = async (req, res)=> {
   try {
     const { year } = req.params;
     const { page, pageSize } = req.query;
@@ -253,7 +256,7 @@ export async function getUsersWithPagination(req, res) {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
-export async function searchUsers(req, res) {
+const searchUsers = async (req, res)=> {
   try {
     const { query } = req.query; // Get the search query and year from request parameters  = req.query; // Get the search query from request parameters
 
@@ -273,7 +276,7 @@ export async function searchUsers(req, res) {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
-export async function getUsersByYear(req, res) {
+const getUsersByYear =  async (req, res)=> {
   try {
     const { year } = req.params;
 
@@ -288,3 +291,6 @@ export async function getUsersByYear(req, res) {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
+
+
+export { register, login, refreshToken, changePassword, logout, createUser, getUserById, editUserData, deleteUser, searchUsers, getUsersByYear, getUsersWithPagination };
