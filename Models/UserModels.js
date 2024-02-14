@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from "mongoose";
+const Schema = _Schema;
 //const bcrypt = require('bcrypt')
 
 const UserSchema = new Schema(
@@ -44,7 +44,7 @@ const UserSchema = new Schema(
 
 const getMemberModel = (year) => {
   const collectionName = `Member${year}`;
-  return mongoose.model(collectionName, UserSchema);
+  return model(collectionName, UserSchema);
 };
 const MemberModel = getMemberModel(new Date().getFullYear());
-module.exports = MemberModel;
+module.exports = MemberModel, getMemberModel;
