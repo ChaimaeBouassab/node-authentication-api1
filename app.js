@@ -2,10 +2,10 @@ const express = require("express");
 const morgan = require("morgan");
 const createError = require("http-errors");
 require("dotenv").config();
-const { verifyAccessToken } = require("./helpers/JWTHelpers");
-require("./helpers/InitRedis");
+const { verifyAccessToken } = require("./Helpers/JWTHelpers");
 const AuthRoute = require("./Routes/AuthRoute");
-require("./helpers/InitMongodb");
+require("./Helpers/InitRedis");
+require("./Helpers/InitMongodb");
 
 const app = express();
 

@@ -3,28 +3,28 @@ const router = express.Router();
 const morgan = require("morgan");
 const mongoose = require('mongoose')
 const createError = require("http-errors");
-const getMemberModel = require("../Models/UserModels");
+const MemberModel = require("../Models/UserModels");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { signAccessToken, signRefreshToken } = require("../helpers/JWTHelpers");
+const { signAccessToken, signRefreshToken } = require("../Helpers/JWTHelpers");
 
 
 module.exports = {
   register: async (req, res) => {
-    const MemberModel = getMemberModel(new Date().getFullYear());
     try {
       const { name, email, password, level, github, linkedin, team } =
         req.body;
 
-      // Validate user input
+      // Validate user input 
       if (!name || !email || !password || !level || !github || !linkedin || !team) {
-        throw new Error("All fields are required");
+        return res.status(400).send("All fields are required");
       }
 
       // Validate email format using regex
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-          throw new Error("Invalid email format");
+        return res.status(400).send("Invalid email format");
+          
       }
 
       const user = new  MemberModel({
@@ -43,7 +43,7 @@ module.exports = {
 
       const isEmailUsed = await MemberModel.isEmailUsed(user.email);
       if (isEmailUsed)
-        throw new Error(JSON.stringify({ message: "Email is already used" }));
+      res.status(400).json({ message: "Email is already used" });
 
       const salt = await bcrypt.genSalt();
       user.password = await bcrypt.hash(user.password, salt);
@@ -70,30 +70,24 @@ module.exports = {
 
   login: async (req, res) => {
     try {
-      const { email, password, year } = req.body;
+      const { email, password } = req.body;
 
-      if (!email || !password || !year)
-        throw new Error(
-          JSON.stringify({ message: "email or password or year is missing" })
-        );
+      if (!email || !password ){
+        return res.status(400).json({ message: "email or password is missing" });
+      }
 
-      const MemberModel = getMemberModel(year);
-   
       const user = await MemberModel.findOne({ email: email });
 
-      if (!user) throw new Error(JSON.stringify({ message: "user not found" }));
+      if (!user) return res.status(400).json({ message: "user not found" });
 
       if (user.email.toLowerCase() !== email.toLowerCase())
-        throw new Error(
-          JSON.stringify({ message: "email or password are incorrect" })
-        );
+        return res.status(400).json({ message: "email or password are incorrect "});
+        
 
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
       if (!isPasswordCorrect)
-        throw new Error(
-          JSON.stringify({ message: "email or password are incorrect" })
-        );
+      res.status(400).json({ message: "email or password are incorrect" });
 
       // Génération du token d'authentification
       const token = jwt.sign(
@@ -113,21 +107,17 @@ module.exports = {
 
   changePassword: async (req, res) => {
     try {
-      const { email, oldPassword, newPassword, year } = req.body;
+      const { email, oldPassword, newPassword } = req.body;
 
-      if (!email) throw new Error("email is missing");
+      if (!email) return res.status(400).send("email  or password is missing");
 
-      if (!oldPassword) throw new Error("old password is missing");
+      if (!oldPassword) return res.status(400).json({ message: "old password  or email is missing" });
 
-      if (!newPassword) throw new Error("new password is missing");
-
-      if (!year) throw new Error("year is missing");
-
-      const MemberModel = getMemberModel(year);
+      if (!newPassword) return  res.status(400).json({ message: "newpassword is missing" });
 
       const user = await MemberModel.findOne({ email: email });
 
-      if (!user) throw new Error(JSON.stringify({ message: "user not found" }));
+      if (!user) res.status(400).json({ message: "user not found" });
 
       const isPasswordCorrect = await bcrypt.compare(
         oldPassword,
@@ -135,13 +125,10 @@ module.exports = {
       );
 
       if (!isPasswordCorrect)
-        throw new Error(
-          JSON.stringify({ message: "old password is incorrect" })
-        );
-
+      res.status(201).json({ message: "old password or email is incorrect"});
+      
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(newPassword, salt);
-
       user.password = hashedPassword;
 
       const data = new MemberModel(user);
@@ -197,9 +184,7 @@ module.exports = {
       const newUser = new MemberModel(userData);
       await newUser.save();
   
-      res
-        .status(201)
-        .json({ message: "User created successfully", user: newUser });
+      res.status(201).json({ message: "User created successfully", user: newUser });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to create user" });

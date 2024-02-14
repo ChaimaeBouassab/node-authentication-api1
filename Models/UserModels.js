@@ -46,4 +46,5 @@ const getMemberModel = (year) => {
   const collectionName = `Member${year}`;
   return mongoose.model(collectionName, UserSchema);
 };
-module.exports = getMemberModel;
+const MemberModel = getMemberModel(new Date().getFullYear());
+module.exports = MemberModel;
