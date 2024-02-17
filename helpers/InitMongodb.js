@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const mongoUri = process.env.MONGODB_URI;
+
 const dbName = process.env.DB_NAME;
 
 if (!mongoUri || !dbName) {

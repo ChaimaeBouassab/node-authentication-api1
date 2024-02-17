@@ -1,8 +1,8 @@
 import express from "express";
 import morgan from "morgan";
-//import createError from "http-errors";
+import createError from "http-errors";
 import dotenv from 'dotenv'
-//import { verifyAccessToken } from "./Helpers/JWTHelpers";
+import { verifyAccessToken } from "./Helpers/JWTHelpers";
 import AuthRoute from "./Routes/AuthRoute.js";
 import "./helpers/InitRedis.js"
 import "./helpers/InitMongodb.js";
