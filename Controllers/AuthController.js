@@ -1,8 +1,13 @@
-import { BadRequest, InternalServerError } from "http-errors";
-import { MemberModel, getMemberModel } from "../Models/UserModels";
-import { genSalt, hash, compare } from "bcrypt";
-import { sign } from "jsonwebtoken";
-import { signAccessToken, signRefreshToken } from "../Helpers/JWTHelpers";
+import httpErrors from "http-errors";
+const { BadRequest, InternalServerError } = httpErrors;
+
+import bcrypt from "bcrypt";
+const { genSalt, hash, compare } = bcrypt;
+
+import jwt from "jsonwebtoken";
+const { sign } = jwt;
+
+import { signAccessToken, signRefreshToken } from "../helpers/JWTHelpers.js";
 
 
 const register = async (req, res) => {

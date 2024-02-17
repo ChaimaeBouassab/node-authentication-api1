@@ -1,12 +1,13 @@
 import express from "express";
 import morgan from "morgan";
 //import createError from "http-errors";
-dotenv.config();
+import dotenv from 'dotenv'
 //import { verifyAccessToken } from "./Helpers/JWTHelpers";
-import AuthRoute from "./Routes/AuthRoute";
-import "./Helpers/InitRedis";
-import "./Helpers/InitMongodb";
+import AuthRoute from "./Routes/AuthRoute.js";
+import "./helpers/InitRedis.js"
+import "./helpers/InitMongodb.js";
 import router from "./Routes/AuthRoute.js";
+dotenv.config()
 
 const app = express();
 
@@ -17,6 +18,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", async (req, res, next) => {
   res.send("Hello from express.");
 });
+
+
 
 app.use("/auth", AuthRoute);
 

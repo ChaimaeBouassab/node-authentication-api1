@@ -1,6 +1,10 @@
-import { sign, verify } from "jsonwebtoken";
-import { InternalServerError, Unauthorized } from "http-errors";
-import client from "./InitRedis"; // Redis client for storing refresh tokens
+import jwt from "jsonwebtoken";
+const sign = jwt.sign;
+const verify = jwt.verify;import pkg from "http-errors";
+
+const InternalServerError = pkg.InternalServerError;
+const Unauthorized = pkg.Unauthorized;
+import client from "../helpers/InitRedis.js"; // Redis client for storing refresh tokens
 
 export function signAccessToken(userId) {
   return new Promise((resolve, reject) => {
