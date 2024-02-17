@@ -8,6 +8,7 @@ import "./helpers/InitRedis.js"
 import "./helpers/InitMongodb.js";
 import router from "./Routes/AuthRoute.js";
 dotenv.config()
+dotenv.config()
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", async (req, res, next) => {
   res.send("Hello from express.");
 });
+
+
 
 
 
