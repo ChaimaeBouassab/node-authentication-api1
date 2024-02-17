@@ -6,13 +6,20 @@ import jwt from "jsonwebtoken";
 const { sign } = jwt;
 import { signAccessToken, signRefreshToken } from "../Helpers/JWTHelpers.js";
 
-
 const register = async (req, res) => {
   try {
     const { name, email, password, level, github, linkedin, team } = req.body;
 
-    // Validate user input 
-    if (!name || !email || !password || !level || !github || !linkedin || !team) {
+    // Validate user input
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !level ||
+      !github ||
+      !linkedin ||
+      !team
+    ) {
       return res.status(400).send("All fields are required");
     }
 
@@ -20,7 +27,6 @@ const register = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).send("Invalid email format");
-
     }
 
     const user = new MemberModel({
@@ -38,8 +44,7 @@ const register = async (req, res) => {
     if (error) throw error;
 
     const isEmailUsed = await MemberModel.isEmailUsed(user.email);
-    if (isEmailUsed)
-      res.status(204).json({ message: "Email is already used" });
+    if (isEmailUsed) res.status(204).json({ message: "Email is already used" });
 
     const salt = await genSalt();
     user.password = await hash(user.password, salt);
@@ -62,7 +67,7 @@ const register = async (req, res) => {
   } catch (error) {
     res.status(400).send(error.message);
   }
-}
+};
 
 const login = async (req, res) => {
   try {
@@ -77,7 +82,9 @@ const login = async (req, res) => {
     if (!user) return res.status(204).json({ message: "user not found" });
 
     if (user.email.toLowerCase() !== email.toLowerCase())
-      return res.status(400).json({ message: "email or password are incorrect " });
+      return res
+        .status(400)
+        .json({ message: "email or password are incorrect " });
 
     const isPasswordCorrect = await compare(password, user.password);
 
@@ -99,7 +106,7 @@ const login = async (req, res) => {
   } catch (error) {
     res.status(400).send(error.message);
   }
-}
+};
 
 const changePassword = async (req, re) => {
   try {
@@ -107,18 +114,19 @@ const changePassword = async (req, re) => {
 
     if (!email) return res.status(400).send("email  or password is missing");
 
-    if (!oldPassword) return res.status(400).json({ message: "old password  or email is missing" });
+    if (!oldPassword)
+      return res
+        .status(400)
+        .json({ message: "old password  or email is missing" });
 
-    if (!newPassword) return res.status(400).json({ message: "newpassword is missing" });
+    if (!newPassword)
+      return res.status(400).json({ message: "newpassword is missing" });
 
     const user = await MemberModel.findOne({ email: email });
 
     if (!user) res.status(400).json({ message: "user not found" });
 
-    const isPasswordCorrect = await compare(
-      oldPassword,
-      user.password
-    );
+    const isPasswordCorrect = await compare(oldPassword, user.password);
 
     if (!isPasswordCorrect)
       res.status(201).json({ message: "old password or email is incorrect" });
@@ -134,8 +142,9 @@ const changePassword = async (req, re) => {
   } catch (error) {
     res.status(400).send(error.message);
   }
-}
+};
 
+// It handles the refresh token logic to generate new access and refresh tokens.
 const refreshToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
@@ -148,64 +157,75 @@ const refreshToken = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
-
-const logout = async (req, res, next)=> {
+};
+// This function handles the logout process for a user.
+// It requires a valid refresh token to log the user out.
+const logout = async (req, res, next) => {
   try {
-    // Extraction du refreshToken de la requête
     const { refreshToken } = req.body;
+    // Check if the refresh token is provided.
+
     if (!refreshToken) throw BadRequest();
     const userId = await verifyRefreshToken(refreshToken);
-    //client.DEL(userId, ...)  méthode de node-redis permettant de
-    //supprimer une clé de Redis (ici, userId)
+
     client.DEL(userId, (err, val) => {
       if (err) {
         console.log(err.message);
-        throw InternalServerError();
+        throw InternalServerError(); // Throw an internal server error if the deletion fails.
       }
       console.log(val);
-      res.sendStatus(204);
+      res.sendStatus(204); // Send a 204 (No Content) response indicating successful logout.
     });
   } catch (error) {
     next(error);
   }
-}
-
-const  createUser =  async (req, res)=> {
+};
+// This function creates a new user based on the data provided in the request body.
+const createUser = async (req, res) => {
   try {
     const userData = req.body;
-
+    // Create a new instance of the MemberModel with the provided user data.
     const newUser = new MemberModel(userData);
     await newUser.save();
 
-    res.status(201).json({ message: "User created successfully", user: newUser });
+    res
+      .status(201)
+      .json({ message: "User created successfully", user: newUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create user" });
   }
-}
+};
 
-const  editUserData = async (req, res) =>{
+const editUserData = async (req, res) => {
   try {
+    // Extract the user ID from the request parameters.
     const userId = req.params.user_id;
     const updatedUserData = req.body;
 
-    const updatedUser = await MemberModel.findByIdAndUpdate(userId, updatedUserData, {
-      new: true,
-    });
+    const updatedUser = await MemberModel.findByIdAndUpdate(
+      userId,
+      updatedUserData,
+      {
+        new: true,
+      }
+    );
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "User data updated successfully", user: updatedUser });
+    res
+      .status(200)
+      .json({ message: "User data updated successfully", user: updatedUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+// This function retrieves a user by their ID.
 
-const getUserById = async (req, res)=> {
+const getUserById = async (req, res) => {
   try {
     const userId = req.params.user_id;
     const userYear = req.params.user_year;
@@ -221,9 +241,9 @@ const getUserById = async (req, res)=> {
     console.error(error);
     res.status(500).json({ error: "Failed to retrieve user" });
   }
-}
+};
 
-const deleteUser  = async (req, res)=>  {
+const deleteUser = async (req, res) => {
   try {
     const userId = req.params.user_id;
 
@@ -239,9 +259,9 @@ const deleteUser  = async (req, res)=>  {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-const getUsersWithPagination = async (req, res)=> {
+const getUsersWithPagination = async (req, res) => {
   try {
     const { year } = req.params;
     const { page, pageSize } = req.query;
@@ -258,32 +278,31 @@ const getUsersWithPagination = async (req, res)=> {
     res.status(200).json({ users });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-const searchUsers = async (req, res)=> {
+const searchUsers = async (req, res) => {
   try {
     const { query } = req.query; // Get the search query and year from request parameters  = req.query; // Get the search query from request parameters
-
 
     // Perform the search based on the query criteria (e.g., name, email, team)
     const users = await MemberModel.find({
       $or: [
-        { name: { $regex: query, $options: 'i' } }, // Search by name (case-insensitive)
-        { email: { $regex: query, $options: 'i' } }, // Search by email (case-insensitive)
-        { team: { $regex: query, $options: 'i' } }
-      ]
+        { name: { $regex: query, $options: "i" } }, // Search by name (case-insensitive)
+        { email: { $regex: query, $options: "i" } }, // Search by email (case-insensitive)
+        { team: { $regex: query, $options: "i" } },
+      ],
     });
 
     res.status(200).json({ users }); // Return the found users
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-const getUsersByYear =  async (req, res)=> {
+const getUsersByYear = async (req, res) => {
   try {
     const { year } = req.params;
 
@@ -295,8 +314,21 @@ const getUsersByYear =  async (req, res)=> {
     res.status(200).json({ users });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-export { register, login, refreshToken, changePassword, logout, createUser, getUserById, editUserData, deleteUser, searchUsers, getUsersByYear, getUsersWithPagination };
+export {
+  register,
+  login,
+  refreshToken,
+  changePassword,
+  logout,
+  createUser,
+  getUserById,
+  editUserData,
+  deleteUser,
+  searchUsers,
+  getUsersByYear,
+  getUsersWithPagination,
+};

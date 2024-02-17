@@ -29,7 +29,7 @@ const UserSchema = new Schema(
     team: { type: String, required: true },
     year: {
       type: Number,
-      default: new Date().getFullYear()
+      default: new Date().getFullYear(),
     },
   },
   {
@@ -40,11 +40,13 @@ const UserSchema = new Schema(
     },
   }
 );
-
+// Define a function to get the MemberModel based on the year
 const getMemberModel = (year) => {
+  // Construct the collection name based on the year
   const collectionName = `Member${year}`;
+  // Return the model using the collection name and the UserSchema
   return model(collectionName, UserSchema);
 };
 const MemberModel = getMemberModel(new Date().getFullYear());
 
-module.exports = MemberModel, getMemberModel;
+(module.exports = MemberModel), getMemberModel;
