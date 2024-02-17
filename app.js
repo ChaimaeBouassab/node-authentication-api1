@@ -1,13 +1,10 @@
 import express from "express";
 import morgan from "morgan";
-//import createError from "http-errors";
 import dotenv from 'dotenv'
 //import { verifyAccessToken } from "./Helpers/JWTHelpers";
 import AuthRoute from "./Routes/AuthRoute.js";
-import "./helpers/InitRedis.js"
-import "./helpers/InitMongodb.js";
-import router from "./Routes/AuthRoute.js";
-dotenv.config()
+import "./Helpers/InitRedis.js"
+import "./Helpers/InitMongodb.js";
 dotenv.config()
 
 const app = express();

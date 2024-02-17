@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
 const sign = jwt.sign;
-const verify = jwt.verify;import pkg from "http-errors";
-
+const verify = jwt.verify;
+import pkg from "http-errors";
 const InternalServerError = pkg.InternalServerError;
 const Unauthorized = pkg.Unauthorized;
-import client from "../helpers/InitRedis.js"; // Redis client for storing refresh tokens
+// Redis client for storing refresh tokens
+import client from "../Helpers/InitRedis.js"; 
+
 
 export function signAccessToken(userId) {
   return new Promise((resolve, reject) => {
@@ -26,6 +28,7 @@ export function signAccessToken(userId) {
     });
   });
 }
+
 export function verifyAccessToken(req, res, next) {
   // Check if 'Authorization' header is present in the request
   if (!req.headers["authorization"]) return next(Unauthorized());
@@ -41,6 +44,7 @@ export function verifyAccessToken(req, res, next) {
     next();
   });
 }
+
 export function signRefreshToken(userId) {
   return new Promise((resolve, reject) => {
     const payload = {};
@@ -68,6 +72,7 @@ export function signRefreshToken(userId) {
     });
   });
 }
+
 export function verifyRefreshToken(refreshToken) {
   return new Promise((resolve, reject) => {
     verify(

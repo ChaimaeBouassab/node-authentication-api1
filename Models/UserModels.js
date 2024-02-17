@@ -1,6 +1,5 @@
 import { Schema as _Schema, model } from "mongoose";
 const Schema = _Schema;
-//const bcrypt = require('bcrypt')
 
 const UserSchema = new Schema(
   {
@@ -47,4 +46,5 @@ const getMemberModel = (year) => {
   return model(collectionName, UserSchema);
 };
 const MemberModel = getMemberModel(new Date().getFullYear());
+
 module.exports = MemberModel, getMemberModel;

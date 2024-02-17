@@ -1,13 +1,10 @@
 import httpErrors from "http-errors";
 const { BadRequest, InternalServerError } = httpErrors;
-//
 import bcrypt from "bcrypt";
 const { genSalt, hash, compare } = bcrypt;
-
 import jwt from "jsonwebtoken";
 const { sign } = jwt;
-
-import { signAccessToken, signRefreshToken } from "../helpers/JWTHelpers.js";
+import { signAccessToken, signRefreshToken } from "../Helpers/JWTHelpers.js";
 
 
 const register = async (req, res) => {
@@ -104,7 +101,6 @@ const login = async (req, res) => {
   }
 }
 
-
 const changePassword = async (req, re) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
@@ -154,7 +150,7 @@ const refreshToken = async (req, res, next) => {
   }
 }
 
- const logout = async (req, res, next)=> {
+const logout = async (req, res, next)=> {
   try {
     // Extraction du refreshToken de la requête
     const { refreshToken } = req.body;
@@ -174,6 +170,7 @@ const refreshToken = async (req, res, next) => {
     next(error);
   }
 }
+
 const  createUser =  async (req, res)=> {
   try {
     const userData = req.body;
@@ -225,6 +222,7 @@ const getUserById = async (req, res)=> {
     res.status(500).json({ error: "Failed to retrieve user" });
   }
 }
+
 const deleteUser  = async (req, res)=>  {
   try {
     const userId = req.params.user_id;
@@ -242,6 +240,7 @@ const deleteUser  = async (req, res)=>  {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
 const getUsersWithPagination = async (req, res)=> {
   try {
     const { year } = req.params;
@@ -262,6 +261,7 @@ const getUsersWithPagination = async (req, res)=> {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
+
 const searchUsers = async (req, res)=> {
   try {
     const { query } = req.query; // Get the search query and year from request parameters  = req.query; // Get the search query from request parameters
@@ -282,6 +282,7 @@ const searchUsers = async (req, res)=> {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
+
 const getUsersByYear =  async (req, res)=> {
   try {
     const { year } = req.params;
@@ -297,6 +298,5 @@ const getUsersByYear =  async (req, res)=> {
     res.status(500).json({ message: 'Internal server error' });
   }
 }
-
 
 export { register, login, refreshToken, changePassword, logout, createUser, getUserById, editUserData, deleteUser, searchUsers, getUsersByYear, getUsersWithPagination };
