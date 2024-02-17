@@ -49,4 +49,4 @@ const getMemberModel = (year) => {
 };
 const MemberModel = getMemberModel(new Date().getFullYear());
 
-(module.exports = MemberModel), getMemberModel;
+export {getMemberModel, MemberModel}

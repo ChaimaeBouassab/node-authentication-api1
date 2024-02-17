@@ -5,6 +5,7 @@ const { genSalt, hash, compare } = bcrypt;
 import jwt from "jsonwebtoken";
 const { sign } = jwt;
 import { signAccessToken, signRefreshToken } from "../Helpers/JWTHelpers.js";
+import { getMemberModel, MemberModel } from "../Models/UserModels.js";
 
 const register = async (req, res) => {
   try {
