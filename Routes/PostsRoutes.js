@@ -2,7 +2,6 @@ import express from "express";
 import jwt from "jsonwebtoken";
 const router = express.Router();
 
-
 function auth(req, res, next) {
   try {
     console.log("auth middleware");

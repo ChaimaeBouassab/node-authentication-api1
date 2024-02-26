@@ -3,8 +3,12 @@ const { BadRequest, InternalServerError } = httpErrors;
 import bcrypt from "bcrypt";
 const { genSalt, hash, compare } = bcrypt;
 import jwt from "jsonwebtoken";
-const { sign } = jwt;
-import { signAccessToken, signRefreshToken } from "../Helpers/JWTHelpers.js";
+const { sign ,verify} = jwt;
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+} from "../Helpers/JWTHelpers.js";
 import { getMemberModel, MemberModel } from "../Models/UserModels.js";
 
 const register = async (req, res) => {
@@ -56,15 +60,16 @@ const register = async (req, res) => {
     const token = sign(
       {
         id: user._id,
-        exp: Date.now() + +process.env.TOKEN_EXPIRE_TIME,
-        iat: Date.now(),
+        email : user.email,
+        exp: Math.floor(Date.now() / 1000) + (60 * 60) + 3600,
+        iat: Math.floor(Date.now() / 1000) + (60 * 60),
       },
       process.env.ACCESS_TOKEN_SECRET
     );
 
     res.status(200).json({ member: savedData, token });
     // Sending the token in the response header
-    res.header("auth-token", token).json({ status: "ok" });
+    //res.header("auth-token", token).json({ status: "ok" });
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -97,8 +102,9 @@ const login = async (req, res) => {
     const token = sign(
       {
         id: user._id,
-        exp: Date.now() + +process.env.TOKEN_EXPIRE_TIME,
-        iat: Date.now(),
+        exp: Math.floor( Date.now() /1000)+3600,
+        iat: Math.floor( Date.now() /1000),
+
       },
       process.env.ACCESS_TOKEN_SECRET
     );
@@ -200,38 +206,49 @@ const createUser = async (req, res) => {
 
 const editUserData = async (req, res) => {
   try {
-    // Extract the user ID from the request parameters.
-    const userId = req.params.user_id;
-    const updatedUserData = req.body;
+    // Extract the token from the request headers.
+    const token = req.headers.authorization;
 
+    if (!token) {
+      throw new Error('Authorization token is missing');
+    }
+
+    // Verify and decode the token to get the user ID.
+    const decoded = verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decoded.id;
+
+    // Find the user by ID and update the user data.
     const updatedUser = await MemberModel.findByIdAndUpdate(
       userId,
-      updatedUserData,
-      {
-        new: true,
-      }
+      req.body, // Use the updated data directly from the request body.
+      { new: true } // Return the updated document.
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    res
-      .status(200)
-      .json({ message: "User data updated successfully", user: updatedUser });
+    res.status(200).json({ message: 'User data updated successfully', user: updatedUser });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
-// This function retrieves a user by their ID.
 
-const getUserById = async (req, res) => {
+// This function retrieves a user by their token.
+
+const getUserByToken = async (req, res) => {
   try {
-    const userId = req.params.user_id;
-    const userYear = req.params.user_year;
+    const token = req.headers.authorization
 
-    const user = await MemberModel.findById(userId);
+    if (!token) {
+      throw new Error('Authorization token is missing');
+    }
+
+    const decoded = verify(token, process.env.ACCESS_TOKEN_SECRET)
+  
+
+    const user = await MemberModel.findById(decoded.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -240,22 +257,29 @@ const getUserById = async (req, res) => {
     res.status(200).json({ user });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to retrieve user" });
+    res.status(500).json({error:"failed to retreive user"})
   }
 };
 
 const deleteUser = async (req, res) => {
   try {
-    const userId = req.params.user_id;
+    const token = req.headers.authorization
+
+
+    if (!token) {
+      throw new Error('Authorization token is missing');
+    }
+    const decoded = verify(token,process.env.ACCESS_TOKEN_SECRET)
+    const email = decoded.email
 
     // Delete the user by ID
-    const deletedUser = await MemberModel.findByIdAndDelete(userId);
+    const deletedUser = await MemberModel.findByIdAndDelete(decoded.id);
 
     if (!deletedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "User deleted successfully" });
+    res.status(200).json({ message:  ` User with the email : ${email} deleted successfully  `  });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -264,7 +288,6 @@ const deleteUser = async (req, res) => {
 
 const getUsersWithPagination = async (req, res) => {
   try {
-    const { year } = req.params;
     const { page, pageSize } = req.query;
 
     // Validate page and pageSize parameters, set default values if not provided
@@ -326,7 +349,7 @@ export {
   changePassword,
   logout,
   createUser,
-  getUserById,
+  getUserByToken,
   editUserData,
   deleteUser,
   searchUsers,

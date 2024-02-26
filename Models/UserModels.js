@@ -6,7 +6,6 @@ const UserSchema = new Schema(
     name: {
       type: String,
       required: true,
-      minLength: 6,
       maxLength: 50,
     },
     email: {
@@ -29,8 +28,9 @@ const UserSchema = new Schema(
     team: { type: String, required: true },
     year: {
       type: Number,
-      default: new Date().getFullYear(),
+      default: () => new Date().getFullYear(), 
     },
+    
   },
   {
     statics: {

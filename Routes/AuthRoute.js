@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, refreshToken, changePassword, logout, createUser, getUserById, editUserData, deleteUser, searchUsers, getUsersByYear, getUsersWithPagination } from "../Controllers/AuthController.js";
+import { register, login, refreshToken, changePassword, logout, createUser, getUserByToken, editUserData, deleteUser, searchUsers, getUsersByYear, getUsersWithPagination } from "../Controllers/AuthController.js";
 const router = express.Router();
 
 
@@ -12,13 +12,13 @@ router.delete("/logout", logout);
 // Create a new user
 router.post("/api/v1/users", createUser);
 
-// Get a user by ID
-router.get("/api/v1/users/:user_id/:user_year", getUserById);
+// Get a user by token
+router.get("/api/v1/users", getUserByToken);
 
 // Edit User Data
-router.patch("/api/v1/users/:user_id/:user_year", editUserData);
+router.patch("/api/v1/users", editUserData);
 
-router.delete("/api/v1/users/:user_id/:user_year", deleteUser);
+router.delete("/api/v1/users", deleteUser);
 
 
 router.get("/api/v1/users/search", searchUsers);
