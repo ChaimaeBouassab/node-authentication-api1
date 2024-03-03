@@ -5,11 +5,13 @@ const { genSalt, hash, compare } = bcrypt;
 import jwt from "jsonwebtoken";
 const { sign ,verify} = jwt;
 import {
+  generateToken,
   signAccessToken,
   signRefreshToken,
   verifyAccessToken,
 } from "../Helpers/JWTHelpers.js";
 import { getMemberModel, MemberModel } from "../Models/UserModels.js";
+
 
 const register = async (req, res) => {
   try {
@@ -57,15 +59,7 @@ const register = async (req, res) => {
     const data = new MemberModel(user);
     const savedData = await data.save();
 
-    const token = sign(
-      {
-        id: user._id,
-        email : user.email,
-        exp: Math.floor(Date.now() / 1000) + (60 * 60) + 3600,
-        iat: Math.floor(Date.now() / 1000) + (60 * 60),
-      },
-      process.env.ACCESS_TOKEN_SECRET
-    );
+    const token = generateToken(user);
 
     res.status(200).json({ member: savedData, token });
     // Sending the token in the response header
@@ -99,15 +93,7 @@ const login = async (req, res) => {
 
     // "Generation of the authentication token"
 
-    const token = sign(
-      {
-        id: user._id,
-        exp: Math.floor( Date.now() /1000)+3600,
-        iat: Math.floor( Date.now() /1000),
-
-      },
-      process.env.ACCESS_TOKEN_SECRET
-    );
+    const token = generateToken(user);
 
     res.header("auth-token", token).json({ status: "ok" });
   } catch (error) {

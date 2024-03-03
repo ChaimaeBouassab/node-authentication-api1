@@ -7,6 +7,19 @@ const Unauthorized = pkg.Unauthorized;
 // Redis client for storing refresh tokens
 import client from "../Helpers/InitRedis.js"; 
 
+// Generate JWT token for user
+// Expires in 1 hour, iat = issued at, iat = issued at, id = user id
+export function generateToken(user){
+  const token = sign(
+    {
+      id: user._id,
+      exp: Math.floor( Date.now() /1000) + 60 * 60,
+      iat: Math.floor( Date.now() /1000) + 60 * 60,
+    },
+    process.env.ACCESS_TOKEN_SECRET
+  );
+  return token
+}
 
 export function signAccessToken(userId) {
   return new Promise((resolve, reject) => {
