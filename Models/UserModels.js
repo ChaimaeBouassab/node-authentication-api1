@@ -23,9 +23,18 @@ const UserSchema = new Schema(
       enum: ["advanced", "normal", "intermediate"],
       required: true,
     },
-    github: { type: String, required: true },
-    linkedin: { type: String, required: true },
-    team: { type: String, required: true },
+    github: { 
+      type: String, 
+      required: true 
+    },
+    linkedin: { 
+      type: String, 
+      required: true 
+    },
+    team: { 
+      type: String, 
+      required: true 
+    },
     year: {
       type: Number,
       default: () => new Date().getFullYear(), 

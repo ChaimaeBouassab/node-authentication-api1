@@ -5,12 +5,15 @@ import dotenv from "dotenv";
 import AuthRoute from "./Routes/AuthRoute.js";
 import "./Helpers/InitRedis.js";
 import "./Helpers/InitMongodb.js";
+import cookieParser from 'cookie-parser';
 
 // Load environment variables from .env file
-
 dotenv.config();
 
 const app = express();
+
+// cookie-parser middleware
+app.use(cookieParser()); 
 
 // Middleware for logging HTTP requests
 app.use(morgan("dev"));

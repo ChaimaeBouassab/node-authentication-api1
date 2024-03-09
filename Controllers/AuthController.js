@@ -3,14 +3,17 @@ const { BadRequest, InternalServerError } = httpErrors;
 import bcrypt from "bcrypt";
 const { genSalt, hash, compare } = bcrypt;
 import jwt from "jsonwebtoken";
-const { sign ,verify} = jwt;
+const verify = jwt.verify;
 import {
   generateToken,
   signAccessToken,
   signRefreshToken,
   verifyAccessToken,
 } from "../Helpers/JWTHelpers.js";
-import { getMemberModel, MemberModel } from "../Models/UserModels.js";
+import { 
+  getMemberModel, 
+  MemberModel 
+} from "../Models/UserModels.js";
 
 
 const register = async (req, res) => {
@@ -61,9 +64,15 @@ const register = async (req, res) => {
 
     const token = generateToken(user);
 
+    // Set cookie securely
+    res.cookie('token', token, {
+      httpOnly: true,
+      //secure: process.env.NODE_ENV === 'production',
+      // Expires in 4 hours
+      //maxAge: 1000 * 60 * 60 * 4, 
+    });
+
     res.status(200).json({ member: savedData, token });
-    // Sending the token in the response header
-    //res.header("auth-token", token).json({ status: "ok" });
   } catch (error) {
     res.status(400).send(error.message);
   }
@@ -82,9 +91,7 @@ const login = async (req, res) => {
     if (!user) return res.status(204).json({ message: "user not found" });
 
     if (user.email.toLowerCase() !== email.toLowerCase())
-      return res
-        .status(400)
-        .json({ message: "email or password are incorrect " });
+      return res.status(400).json({ message: "email or password are incorrect " });
 
     const isPasswordCorrect = await compare(password, user.password);
 
@@ -92,25 +99,30 @@ const login = async (req, res) => {
       res.status(204).json({ message: "email or password are incorrect" });
 
     // "Generation of the authentication token"
-
     const token = generateToken(user);
 
-    res.header("auth-token", token).json({ status: "ok" });
+    // Set cookie securely
+    res.cookie('token', token, {
+      httpOnly: true,
+      //secure: process.env.NODE_ENV === 'production',
+      //maxAge: 1000 * 60 * 60 * 4, // Expires in 4 hours
+    });
+
+    res.json({ status: "ok" });
+    //res.header("Token", token);
   } catch (error) {
     res.status(400).send(error.message);
   }
 };
 
-const changePassword = async (req, re) => {
+const changePassword = async (req, res) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
 
     if (!email) return res.status(400).send("email  or password is missing");
 
     if (!oldPassword)
-      return res
-        .status(400)
-        .json({ message: "old password  or email is missing" });
+      return res.status(400).json({ message: "old password  or email is missing" });
 
     if (!newPassword)
       return res.status(400).json({ message: "newpassword is missing" });
@@ -153,24 +165,18 @@ const refreshToken = async (req, res, next) => {
 };
 // This function handles the logout process for a user.
 // It requires a valid refresh token to log the user out.
-const logout = async (req, res, next) => {
+const logout = async (req, res) => {
   try {
-    const { refreshToken } = req.body;
-    // Check if the refresh token is provided.
-
-    if (!refreshToken) throw BadRequest();
-    const userId = await verifyRefreshToken(refreshToken);
-
-    client.DEL(userId, (err, val) => {
-      if (err) {
-        console.log(err.message);
-        throw InternalServerError(); // Throw an internal server error if the deletion fails.
-      }
-      console.log(val);
-      res.sendStatus(204); // Send a 204 (No Content) response indicating successful logout.
+    // Clear the cookie securely
+    res.cookie('auth-token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 0, // Expires immediately
     });
+
+    res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: "Logout failed" });
   }
 };
 // This function creates a new user based on the data provided in the request body.
@@ -181,9 +187,7 @@ const createUser = async (req, res) => {
     const newUser = new MemberModel(userData);
     await newUser.save();
 
-    res
-      .status(201)
-      .json({ message: "User created successfully", user: newUser });
+    res.status(201).json({ message: "User created successfully", user: newUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create user" });

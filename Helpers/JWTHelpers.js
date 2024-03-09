@@ -13,7 +13,7 @@ export function generateToken(user){
   const token = sign(
     {
       id: user._id,
-      exp: Math.floor( Date.now() /1000) + 60 * 60,
+      exp: Math.floor( Date.now() /1000) + 60 * 60 * 2,
       iat: Math.floor( Date.now() /1000) + 60 * 60,
     },
     process.env.ACCESS_TOKEN_SECRET
